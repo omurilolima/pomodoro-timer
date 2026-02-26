@@ -6,7 +6,9 @@ export const Home = () => {
 
     return (
         <View>
-            <Text>Home Page</Text>
+            <Text style={{ fontFamily: 'InterRegular', fontSize: 56 }}>
+                Home Page
+            </Text>
         </View>
     )
 }
