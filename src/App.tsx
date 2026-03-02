@@ -5,6 +5,7 @@ import { useFonts } from 'expo-font';
 
 import { Home } from './pages/Home';
 import { useEffect } from 'react';
+import { AppRoutes } from './appRoutes';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -23,9 +24,5 @@ export function App() {
 
   if ( !loaded && !error ) return
   
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Home />
-    </View>
-  );
+  return <AppRoutes />
 }
