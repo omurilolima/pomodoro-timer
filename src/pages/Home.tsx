@@ -3,12 +3,25 @@ import { Text, TouchableOpacity, View } from "react-native";
 import { TNavigationScreenProps } from "../appRoutes";
 import { Theme } from "../shared/themes/Theme";
 import { StyleSheet } from "react-native";
+import { AnimatedCircularProgress } from "react-native-circular-progress";
 
 export const Home = () => {
   const navigation = useNavigation<TNavigationScreenProps>();
 
   return (
     <View>
+      <View style={styles.progressContainer}>
+        <AnimatedCircularProgress
+          size={160}
+          width={7}
+          fill={70}
+          tintColor={Theme.colors.divider}
+          backgroundColor={Theme.colors.primary}
+          rotation={0}
+          children={() => <Text style={styles.progressText}>12:45</Text>}
+        />
+      </View>
+
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.primaryButton}>
           <Text style={styles.primaryButtonText}>Iniciar</Text>
@@ -66,5 +79,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     gap: 16,
+  },
+  progressContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 32,
+  },
+  progressText: {
+    color: Theme.colors.text,
+    fontSize: Theme.fontSizes.title,
+    fontFamily: Theme.fonts.interBold,
   },
 });
