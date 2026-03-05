@@ -4,31 +4,52 @@ import { TNavigationScreenProps } from "../appRoutes";
 import { Theme } from "../shared/themes/Theme";
 import { StyleSheet } from "react-native";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
+import { MaterialIcons } from "@expo/vector-icons";
 
 export const Home = () => {
   const navigation = useNavigation<TNavigationScreenProps>();
 
   return (
-    <View>
-      <View style={styles.progressContainer}>
-        <AnimatedCircularProgress
-          size={160}
-          width={7}
-          fill={70}
-          tintColor={Theme.colors.divider}
-          backgroundColor={Theme.colors.primary}
-          rotation={0}
-          children={() => <Text style={styles.progressText}>12:45</Text>}
-        />
-      </View>
+    <View style={styles.mainContainer}>
+      <TouchableOpacity
+        style={styles.settingsButton}
+        onPress={() => navigation.navigate("Settings")}
+      >
+        <MaterialIcons name="settings" size={28} color={Theme.colors.divider} />
+      </TouchableOpacity>
+      <View style={styles.container}>
+        <View style={styles.titleGroup}>
+          <View style={styles.titleContainer}>
+            <Text style={styles.titleText}>Pomodoro</Text>
+          </View>
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.primaryButton}>
-          <Text style={styles.primaryButtonText}>Iniciar</Text>
-        </TouchableOpacity>
-      </View>
+          <View style={styles.stateContainer}>
+            <Text style={styles.stateText}>Vamos nos concentrar?</Text>
+            {/* <Text style={styles.stateText}>Hora de se concentrar!</Text>
+          <Text style={styles.stateText}>Pausa curta</Text>
+          <Text style={styles.stateText}>Pausa longa</Text>
+          <Text style={styles.stateText}>Cronômetro em pausa</Text> */}
+          </View>
+          <View style={styles.progressContainer}>
+            <AnimatedCircularProgress
+              size={160}
+              width={7}
+              fill={0}
+              tintColor={Theme.colors.divider}
+              backgroundColor={Theme.colors.primary}
+              rotation={0}
+              children={() => <Text style={styles.progressText}>25:00</Text>}
+            />
+          </View>
+        </View>
 
-      <View style={styles.buttonContainer}>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.primaryButton}>
+            <Text style={styles.primaryButtonText}>Iniciar</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/*       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.primaryButton}>
           <Text style={styles.primaryButtonText}>Pausar</Text>
         </TouchableOpacity>
@@ -46,12 +67,39 @@ export const Home = () => {
         <TouchableOpacity style={styles.secondaryButton}>
           <Text style={styles.secondaryButtonText}>Reiniciar</Text>
         </TouchableOpacity>
+      </View> */}
+
+        <View style={styles.pomodorosContainer}>
+          <Text style={styles.pomodorosText}>Pormodoros:</Text>
+          <View style={styles.pomodorosIndicatorComplete} />
+          <View style={styles.pomodorosIndicatorComplete} />
+          <View style={styles.pomodorosIndicator} />
+          <View style={styles.pomodorosIndicator} />
+        </View>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,
+    padding: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  container: {
+    gap: 36,
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  settingsButton: {
+    alignSelf: "flex-end",
+  },
+  titleGroup: {
+    gap: 24,
+  },
   primaryButton: {
     backgroundColor: Theme.colors.primary,
     paddingVertical: 8,
@@ -83,11 +131,49 @@ const styles = StyleSheet.create({
   progressContainer: {
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 32,
   },
   progressText: {
     color: Theme.colors.text,
     fontSize: Theme.fontSizes.title,
     fontFamily: Theme.fonts.interBold,
+  },
+  titleContainer: {
+    alignItems: "center",
+  },
+  titleText: {
+    color: Theme.colors.text,
+    fontSize: Theme.fontSizes.title,
+    fontFamily: Theme.fonts.interBold,
+  },
+  stateContainer: {
+    alignItems: "center",
+  },
+  stateText: {
+    color: Theme.colors.text,
+    fontSize: Theme.fontSizes.body,
+    fontFamily: Theme.fonts.interRegular,
+  },
+  pomodorosContainer: {
+    gap: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+  },
+  pomodorosText: {
+    color: Theme.colors.text,
+    fontSize: Theme.fontSizes.body,
+    fontFamily: Theme.fonts.interRegular,
+  },
+  pomodorosIndicator: {
+    width: 20,
+    height: 20,
+    borderRadius: "100%",
+    backgroundColor: Theme.colors.divider,
+  },
+  pomodorosIndicatorComplete: {
+    width: 20,
+    height: 20,
+    borderRadius: "100%",
+    backgroundColor: Theme.colors.primary,
   },
 });

@@ -6,8 +6,8 @@ export const Theme = {
     divider: "#373738",
   },
   fonts: {
-    interRegular: "interRegular",
-    interBold: "interBold",
+    interRegular: "InterRegular",
+    interBold: "InterBold",
   },
   fontSizes: {
     title: 32,
