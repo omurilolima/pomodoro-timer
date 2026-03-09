@@ -15,6 +15,8 @@ export const Home = () => {
   const [shortBreak, setShortBreak] = useState(false);
   const [longBreak, setLongBreak] = useState(false);
 
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+
   return (
     <View style={styles.mainContainer}>
       <TouchableOpacity
@@ -34,16 +36,22 @@ export const Home = () => {
               <Text style={styles.stateText}>Vamos nos concentrar?</Text>
             )}
 
-            {isRunning && !isPaused && (
-              <Text style={styles.stateText}>Hora de se concentrar!</Text>
-            )}
+            {isRunning && (
+              <>
+                {!isPaused && (
+                  <Text style={styles.stateText}>Hora de se concentrar!</Text>
+                )}
 
-            {shortBreak && <Text style={styles.stateText}>Pausa curta</Text>}
+                {shortBreak && (
+                  <Text style={styles.stateText}>Pausa curta</Text>
+                )}
 
-            {longBreak && <Text style={styles.stateText}>Pausa longa</Text>}
+                {longBreak && <Text style={styles.stateText}>Pausa longa</Text>}
 
-            {isRunning && isPaused && (
-              <Text style={styles.stateText}>Cronômetro em pausa</Text>
+                {isPaused && (
+                  <Text style={styles.stateText}>Cronômetro em pausa</Text>
+                )}
+              </>
             )}
           </View>
           <View style={styles.progressContainer}>
@@ -113,10 +121,34 @@ export const Home = () => {
 
         <View style={styles.pomodorosContainer}>
           <Text style={styles.pomodorosText}>Pormodoros:</Text>
-          <View style={styles.pomodorosIndicatorComplete} />
-          <View style={styles.pomodorosIndicatorComplete} />
-          <View style={styles.pomodorosIndicator} />
-          <View style={styles.pomodorosIndicator} />
+          <View
+            style={
+              step >= 1
+                ? styles.pomodorosIndicatorComplete
+                : styles.pomodorosIndicator
+            }
+          />
+          <View
+            style={
+              step >= 2
+                ? styles.pomodorosIndicatorComplete
+                : styles.pomodorosIndicator
+            }
+          />
+          <View
+            style={
+              step >= 3
+                ? styles.pomodorosIndicatorComplete
+                : styles.pomodorosIndicator
+            }
+          />
+          <View
+            style={
+              step >= 4
+                ? styles.pomodorosIndicatorComplete
+                : styles.pomodorosIndicator
+            }
+          />
         </View>
       </View>
     </View>
