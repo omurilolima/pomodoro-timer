@@ -18,15 +18,17 @@ export const Home = () => {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
   const [currentCicleTime] = useState(25 * 60);
-  const [counterCicleTime, setCounterCicleTime] = useState(12.5 * 60);
+  const [counterCicleTime, setCounterCicleTime] = useState(25 * 60);
 
   useEffect(() => {
+    if (!isRunning || isPaused) return;
+
     const ref = setInterval(() => {
-      setCounterCicleTime((old) => old - 1);
+      setCounterCicleTime((old) => (old <= 0 ? old : old - 1));
     }, 1000);
 
     return () => clearInterval(ref);
-  }, []);
+  }, [isRunning, isPaused]);
 
   return (
     <View style={styles.mainContainer}>
