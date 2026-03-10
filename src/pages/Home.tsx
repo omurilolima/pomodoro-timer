@@ -5,7 +5,7 @@ import { Theme } from "../shared/themes/Theme";
 import { StyleSheet } from "react-native";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
 import { MaterialIcons } from "@expo/vector-icons";
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 
 export const Home = () => {
   const navigation = useNavigation<TNavigationScreenProps>();
@@ -16,6 +16,17 @@ export const Home = () => {
   const [longBreak, setLongBreak] = useState(false);
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+
+  const [currentCicleTime] = useState(25 * 60);
+  const [counterCicleTime, setCounterCicleTime] = useState(12.5 * 60);
+
+  useEffect(() => {
+    const ref = setInterval(() => {
+      setCounterCicleTime((old) => old - 1);
+    }, 1000);
+
+    return () => clearInterval(ref);
+  }, []);
 
   return (
     <View style={styles.mainContainer}>
@@ -58,11 +69,16 @@ export const Home = () => {
             <AnimatedCircularProgress
               size={160}
               width={7}
-              fill={0}
+              fill={100 - (counterCicleTime / currentCicleTime) * 100}
               tintColor={Theme.colors.divider}
               backgroundColor={Theme.colors.primary}
               rotation={0}
-              children={() => <Text style={styles.progressText}>25:00</Text>}
+              children={() => (
+                <Text style={styles.progressText}>
+                  {Math.floor(counterCicleTime / 60)}:
+                  {(counterCicleTime % 60).toString().padStart(2, "0")}
+                </Text>
+              )}
             />
           </View>
         </View>
