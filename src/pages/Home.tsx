@@ -20,6 +20,26 @@ export const Home = () => {
   const [currentCicleTime] = useState(25 * 60);
   const [counterCicleTime, setCounterCicleTime] = useState(25 * 60);
 
+  const handleStart = () => {
+    setIsRunning(true);
+  };
+
+  const handlePause = () => {
+    setIsPaused(true);
+  };
+
+  const handleStop = () => {
+    setIsRunning(false);
+    setIsPaused(false);
+    setCounterCicleTime(currentCicleTime);
+    setStep(1);
+  };
+
+  const handleContinue = () => {
+    setIsRunning(true);
+    setIsPaused(false);
+  };
+
   useEffect(() => {
     if (!isRunning || isPaused) return;
 
@@ -89,7 +109,7 @@ export const Home = () => {
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={styles.primaryButton}
-              onPress={() => setIsRunning(true)}
+              onPress={handleStart}
             >
               <Text style={styles.primaryButtonText}>Iniciar</Text>
             </TouchableOpacity>
@@ -99,17 +119,14 @@ export const Home = () => {
         {isRunning && !isPaused && (
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.primaryButton}>
-              <Text
-                style={styles.primaryButtonText}
-                onPress={() => setIsPaused(true)}
-              >
+              <Text style={styles.primaryButtonText} onPress={handlePause}>
                 Pausar
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.secondaryButton}
-              onPress={() => setIsRunning(false)}
+              onPress={handleStop}
             >
               <Text style={styles.secondaryButtonText}>Parar</Text>
             </TouchableOpacity>
@@ -120,19 +137,16 @@ export const Home = () => {
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={styles.primaryButton}
-              onPress={() => setIsPaused(false)}
+              onPress={handleContinue}
             >
               <Text style={styles.primaryButtonText}>Continuar</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.secondaryButton}
-              onPress={() => {
-                setIsRunning(false);
-                setIsPaused(false);
-              }}
+              onPress={handleStop}
             >
-              <Text style={styles.secondaryButtonText}>Reiniciar</Text>
+              <Text style={styles.secondaryButtonText}>Parar</Text>
             </TouchableOpacity>
           </View>
         )}
