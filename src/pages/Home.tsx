@@ -5,19 +5,22 @@ import { Theme } from "../shared/themes/Theme";
 import { StyleSheet } from "react-native";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
 import { MaterialIcons } from "@expo/vector-icons";
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 
 export const Home = () => {
   const navigation = useNavigation<TNavigationScreenProps>();
 
-  const [isRunning, setIsRunning] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [shortBreak, setShortBreak] = useState(false);
-  const [longBreak, setLongBreak] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState<
+    "focus" | "shortBreak" | "longBreak"
+  >("focus");
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
 
-  const [currentCicleTime] = useState(25 * 60);
+  const [currentFocusCicleTime] = useState(25 * 60);
+  const [currentShortBreakCicleTime] = useState(5 * 60);
+  const [currentLongBreakCicleTime] = useState(15 * 60);
   const [counterCicleTime, setCounterCicleTime] = useState(25 * 60);
 
   const handleStart = () => {
@@ -31,7 +34,7 @@ export const Home = () => {
   const handleStop = () => {
     setIsRunning(false);
     setIsPaused(false);
-    setCounterCicleTime(currentCicleTime);
+    setCounterCicleTime(currentFocusCicleTime);
     setStep(1);
   };
 
@@ -49,6 +52,56 @@ export const Home = () => {
 
     return () => clearInterval(ref);
   }, [isRunning, isPaused]);
+
+  useEffect(() => {
+    switch (currentStatus) {
+      case "focus": {
+        if (counterCicleTime > 0) break;
+        if (step < 4) {
+          setStep((old) => (old < 4 ? ((old + 1) as 1 | 2 | 3 | 4) : old));
+          setCurrentStatus("shortBreak");
+          setCounterCicleTime(currentShortBreakCicleTime);
+        } else {
+          setStep(1);
+          setCurrentStatus("longBreak");
+          setCounterCicleTime(currentLongBreakCicleTime);
+        }
+        break;
+      }
+      case "shortBreak":
+      case "longBreak": {
+        if (counterCicleTime <= 0) {
+          setCurrentStatus("focus");
+          setCounterCicleTime(currentFocusCicleTime);
+        }
+        break;
+      }
+    }
+  }, [
+    currentStatus,
+    counterCicleTime,
+    step,
+    currentShortBreakCicleTime,
+    currentFocusCicleTime,
+    currentLongBreakCicleTime,
+  ]);
+
+  const timeProgress = useMemo(() => {
+    switch (currentStatus) {
+      case "focus":
+        return 100 - (counterCicleTime / currentFocusCicleTime) * 100;
+      case "shortBreak":
+        return 100 - (counterCicleTime / currentShortBreakCicleTime) * 100;
+      case "longBreak":
+        return 100 - (counterCicleTime / currentLongBreakCicleTime) * 100;
+    }
+  }, [
+    currentStatus,
+    counterCicleTime,
+    currentFocusCicleTime,
+    currentShortBreakCicleTime,
+    currentLongBreakCicleTime,
+  ]);
 
   return (
     <View style={styles.mainContainer}>
@@ -71,15 +124,17 @@ export const Home = () => {
 
             {isRunning && (
               <>
-                {!isPaused && (
+                {!isPaused && currentStatus === "focus" && (
                   <Text style={styles.stateText}>Hora de se concentrar!</Text>
                 )}
 
-                {shortBreak && (
+                {!isPaused && currentStatus === "shortBreak" && (
                   <Text style={styles.stateText}>Pausa curta</Text>
                 )}
 
-                {longBreak && <Text style={styles.stateText}>Pausa longa</Text>}
+                {!isPaused && currentStatus === "longBreak" && (
+                  <Text style={styles.stateText}>Pausa longa</Text>
+                )}
 
                 {isPaused && (
                   <Text style={styles.stateText}>Cronômetro em pausa</Text>
@@ -91,7 +146,7 @@ export const Home = () => {
             <AnimatedCircularProgress
               size={160}
               width={7}
-              fill={100 - (counterCicleTime / currentCicleTime) * 100}
+              fill={timeProgress}
               tintColor={Theme.colors.divider}
               backgroundColor={Theme.colors.primary}
               rotation={0}
@@ -155,13 +210,6 @@ export const Home = () => {
           <Text style={styles.pomodorosText}>Pormodoros:</Text>
           <View
             style={
-              step >= 1
-                ? styles.pomodorosIndicatorComplete
-                : styles.pomodorosIndicator
-            }
-          />
-          <View
-            style={
               step >= 2
                 ? styles.pomodorosIndicatorComplete
                 : styles.pomodorosIndicator
@@ -177,6 +225,13 @@ export const Home = () => {
           <View
             style={
               step >= 4
+                ? styles.pomodorosIndicatorComplete
+                : styles.pomodorosIndicator
+            }
+          />
+          <View
+            style={
+              step === 1 && currentStatus === "longBreak"
                 ? styles.pomodorosIndicatorComplete
                 : styles.pomodorosIndicator
             }
