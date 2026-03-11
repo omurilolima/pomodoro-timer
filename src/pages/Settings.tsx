@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { Text, TouchableOpacity, View } from "react-native";
 import { TNavigationScreenProps } from "../appRoutes";
@@ -5,15 +7,53 @@ import { Theme } from "../shared/themes/Theme";
 import { StyleSheet } from "react-native";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useState } from "react";
 
 export const Settings = () => {
   const navigation = useNavigation<TNavigationScreenProps>();
-
+  const [loaded, setLoaded] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [focusPeriod, setFocusPeriod] = useState(25);
   const [shortBreak, setShortBreak] = useState(5);
   const [longBreak, setLongBreak] = useState(15);
+
+  useEffect(() => {
+    Promise.all([
+      AsyncStorage.getItem("NOTIFICATIONS_ENABLED"),
+      AsyncStorage.getItem("FOCUS_PERIOD"),
+      AsyncStorage.getItem("SHORT_BREAK"),
+      AsyncStorage.getItem("LONG_BREAK"),
+    ])
+      .then(([notificationsEnabled, focusPeriod, shortBreak, longBreak]) => {
+        setNotificationsEnabled(JSON.parse(notificationsEnabled || "true"));
+        setFocusPeriod(JSON.parse(focusPeriod || "25"));
+        setShortBreak(JSON.parse(shortBreak || "5"));
+        setLongBreak(JSON.parse(longBreak || "15"));
+      })
+      .finally(() => setLoaded(true));
+  }, []);
+
+  useEffect(() => {
+    if (!loaded) return;
+    AsyncStorage.setItem(
+      "NOTIFICATIONS_ENABLED",
+      JSON.stringify(notificationsEnabled),
+    );
+  }, [notificationsEnabled, loaded]);
+
+  useEffect(() => {
+    if (!loaded) return;
+    AsyncStorage.setItem("FOCUS_PERIOD", JSON.stringify(focusPeriod));
+  }, [focusPeriod, loaded]);
+
+  useEffect(() => {
+    if (!loaded) return;
+    AsyncStorage.setItem("SHORT_BREAK", JSON.stringify(shortBreak));
+  }, [shortBreak, loaded]);
+
+  useEffect(() => {
+    if (!loaded) return;
+    AsyncStorage.setItem("LONG_BREAK", JSON.stringify(longBreak));
+  }, [longBreak, loaded]);
 
   return (
     <View style={styles.mainContainer}>
