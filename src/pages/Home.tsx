@@ -35,13 +35,27 @@ export const Home = () => {
         AsyncStorage.getItem("SHORT_BREAK"),
         AsyncStorage.getItem("LONG_BREAK"),
       ]).then(([focus, shortBreak, longBreak]) => {
+        setCounterCicleTime(JSON.parse(focus || "25") * 60);
         setcurrentFocusCicleTime(JSON.parse(focus || "25") * 60);
         setcurrentShortBreakCicleTime(JSON.parse(shortBreak || "5") * 60);
         setcurrentLongBreakCicleTime(JSON.parse(longBreak || "15") * 60);
-        setCounterCicleTime(JSON.parse(focus || "25") * 60);
       });
     }, []),
   );
+
+  useEffect(() => {
+    AsyncStorage.getItem("APP_STATE").then((value) => {
+      const appState = JSON.parse(value || "null");
+      if (!appState) return;
+      console.log(appState);
+
+      setStep(appState.step);
+      setIsPaused(appState.isPaused);
+      setIsRunning(appState.isRunning);
+      setCurrentStatus(appState.currentStatus);
+      setCounterCicleTime(appState.counterCicleTime);
+    });
+  }, []);
 
   const handleStart = () => {
     setIsRunning(true);
@@ -52,10 +66,11 @@ export const Home = () => {
   };
 
   const handleStop = () => {
-    setIsRunning(false);
-    setIsPaused(false);
-    setCounterCicleTime(currentFocusCicleTime);
     setStep(1);
+    setIsPaused(false);
+    setIsRunning(false);
+    setCurrentStatus("focus");
+    setCounterCicleTime(currentFocusCicleTime);
   };
 
   const handleContinue = () => {
@@ -97,13 +112,27 @@ export const Home = () => {
         break;
       }
     }
+
+    AsyncStorage.setItem(
+      "APP_STATE",
+      JSON.stringify({
+        step,
+        isPaused,
+        isRunning,
+        currentStatus,
+        time: Date.now(),
+        counterCicleTime,
+      }),
+    );
   }, [
+    step,
+    isPaused,
+    isRunning,
     currentStatus,
     counterCicleTime,
-    step,
-    currentShortBreakCicleTime,
     currentFocusCicleTime,
     currentLongBreakCicleTime,
+    currentShortBreakCicleTime,
   ]);
 
   const timeProgress = useMemo(() => {
@@ -119,8 +148,8 @@ export const Home = () => {
     currentStatus,
     counterCicleTime,
     currentFocusCicleTime,
-    currentShortBreakCicleTime,
     currentLongBreakCicleTime,
+    currentShortBreakCicleTime,
   ]);
 
   return (
@@ -230,28 +259,28 @@ export const Home = () => {
           <Text style={styles.pomodorosText}>Pomodoros:</Text>
           <View
             style={
-              step >= 2
+              step >= 2 || currentStatus === "longBreak"
                 ? styles.pomodorosIndicatorComplete
                 : styles.pomodorosIndicator
             }
           />
           <View
             style={
-              step >= 3
+              step >= 3 || currentStatus === "longBreak"
                 ? styles.pomodorosIndicatorComplete
                 : styles.pomodorosIndicator
             }
           />
           <View
             style={
-              step >= 4
+              step >= 4 || currentStatus === "longBreak"
                 ? styles.pomodorosIndicatorComplete
                 : styles.pomodorosIndicator
             }
           />
           <View
             style={
-              step === 1 && currentStatus === "longBreak"
+              currentStatus === "longBreak"
                 ? styles.pomodorosIndicatorComplete
                 : styles.pomodorosIndicator
             }
