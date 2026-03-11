@@ -1,11 +1,12 @@
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Text, TouchableOpacity, View } from "react-native";
 import { TNavigationScreenProps } from "../appRoutes";
 import { Theme } from "../shared/themes/Theme";
 import { StyleSheet } from "react-native";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
 import { MaterialIcons } from "@expo/vector-icons";
-import { use, useEffect, useMemo, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const Home = () => {
   const navigation = useNavigation<TNavigationScreenProps>();
@@ -18,10 +19,29 @@ export const Home = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
 
-  const [currentFocusCicleTime] = useState(25 * 60);
-  const [currentShortBreakCicleTime] = useState(5 * 60);
-  const [currentLongBreakCicleTime] = useState(15 * 60);
+  const [currentFocusCicleTime, setcurrentFocusCicleTime] = useState(25 * 60);
+  const [currentShortBreakCicleTime, setcurrentShortBreakCicleTime] = useState(
+    5 * 60,
+  );
+  const [currentLongBreakCicleTime, setcurrentLongBreakCicleTime] = useState(
+    15 * 60,
+  );
   const [counterCicleTime, setCounterCicleTime] = useState(25 * 60);
+
+  useFocusEffect(
+    useCallback(() => {
+      Promise.all([
+        AsyncStorage.getItem("FOCUS_PERIOD"),
+        AsyncStorage.getItem("SHORT_BREAK"),
+        AsyncStorage.getItem("LONG_BREAK"),
+      ]).then(([focus, shortBreak, longBreak]) => {
+        setcurrentFocusCicleTime(JSON.parse(focus || "25") * 60);
+        setcurrentShortBreakCicleTime(JSON.parse(shortBreak || "5") * 60);
+        setcurrentLongBreakCicleTime(JSON.parse(longBreak || "15") * 60);
+        setCounterCicleTime(JSON.parse(focus || "25") * 60);
+      });
+    }, []),
+  );
 
   const handleStart = () => {
     setIsRunning(true);
@@ -207,7 +227,7 @@ export const Home = () => {
         )}
 
         <View style={styles.pomodorosContainer}>
-          <Text style={styles.pomodorosText}>Pormodoros:</Text>
+          <Text style={styles.pomodorosText}>Pomodoros:</Text>
           <View
             style={
               step >= 2
