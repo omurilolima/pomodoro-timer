@@ -1,15 +1,30 @@
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { Text, TouchableOpacity, View } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  AppState,
+} from "react-native";
 import { TNavigationScreenProps } from "../appRoutes";
 import { Theme } from "../shared/themes/Theme";
-import { StyleSheet } from "react-native";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
 import { MaterialIcons } from "@expo/vector-icons";
-import { use, useCallback, useEffect, useMemo, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { updateStateByElapsedTime } from "../shared/helpers/UpdateStateByElapsedTime";
 
 export const Home = () => {
   const navigation = useNavigation<TNavigationScreenProps>();
+
+  const [appRunningState, setAppRunningState] = useState(AppState.currentState);
+  useEffect(() => {
+    const listener = AppState.addEventListener("change", setAppRunningState);
+
+    return () => listener.remove();
+  }, []);
+
+  console.log("appRunningState:", appRunningState);
 
   const [currentStatus, setCurrentStatus] = useState<
     "focus" | "shortBreak" | "longBreak"
@@ -43,26 +58,65 @@ export const Home = () => {
     }, []),
   );
 
+  const isShouldUpdate = useRef(true);
   useEffect(() => {
-    AsyncStorage.getItem("APP_STATE").then((value) => {
-      const appState = JSON.parse(value || "null");
-      if (!appState) return;
-      console.log(appState);
+    if (isShouldUpdate.current) {
+      isShouldUpdate.current = false;
+      AsyncStorage.getItem("APP_STATE").then((value) => {
+        const appState = JSON.parse(value || "null");
+        if (!appState) return;
 
-      setStep(appState.step);
-      setIsPaused(appState.isPaused);
-      setIsRunning(appState.isRunning);
-      setCurrentStatus(appState.currentStatus);
-      setCounterCicleTime(appState.counterCicleTime);
-    });
-  }, []);
+        const updatedState = updateStateByElapsedTime(appState);
+
+        setStep(updatedState.step);
+        setIsPaused(updatedState.isPaused);
+        setIsRunning(updatedState.isRunning);
+        setCurrentStatus(updatedState.currentStatus);
+        setCounterCicleTime(updatedState.counterCicleTime);
+      });
+    }
+
+    if (appRunningState === "background") {
+      isShouldUpdate.current = true;
+    }
+  }, [appRunningState]);
 
   const handleStart = () => {
     setIsRunning(true);
+
+    AsyncStorage.setItem(
+      "APP_STATE",
+      JSON.stringify({
+        step,
+        isPaused,
+        isRunning: true,
+        currentStatus,
+        time: Date.now(),
+        counterCicleTime,
+        currentFocusCicleTime,
+        currentShortBreakCicleTime,
+        currentLongBreakCicleTime,
+      }),
+    );
   };
 
   const handlePause = () => {
     setIsPaused(true);
+
+    AsyncStorage.setItem(
+      "APP_STATE",
+      JSON.stringify({
+        step,
+        isPaused: true,
+        isRunning,
+        currentStatus,
+        time: Date.now(),
+        counterCicleTime,
+        currentFocusCicleTime,
+        currentShortBreakCicleTime,
+        currentLongBreakCicleTime,
+      }),
+    );
   };
 
   const handleStop = () => {
@@ -71,11 +125,41 @@ export const Home = () => {
     setIsRunning(false);
     setCurrentStatus("focus");
     setCounterCicleTime(currentFocusCicleTime);
+
+    AsyncStorage.setItem(
+      "APP_STATE",
+      JSON.stringify({
+        step: 1,
+        isPaused: false,
+        isRunning: false,
+        currentStatus: "focus",
+        time: Date.now(),
+        counterCicleTime: currentFocusCicleTime,
+        currentFocusCicleTime,
+        currentShortBreakCicleTime,
+        currentLongBreakCicleTime,
+      }),
+    );
   };
 
   const handleContinue = () => {
     setIsRunning(true);
     setIsPaused(false);
+
+    AsyncStorage.setItem(
+      "APP_STATE",
+      JSON.stringify({
+        step,
+        isPaused: false,
+        isRunning,
+        currentStatus,
+        time: Date.now(),
+        counterCicleTime,
+        currentFocusCicleTime,
+        currentShortBreakCicleTime,
+        currentLongBreakCicleTime,
+      }),
+    );
   };
 
   useEffect(() => {
@@ -112,18 +196,6 @@ export const Home = () => {
         break;
       }
     }
-
-    AsyncStorage.setItem(
-      "APP_STATE",
-      JSON.stringify({
-        step,
-        isPaused,
-        isRunning,
-        currentStatus,
-        time: Date.now(),
-        counterCicleTime,
-      }),
-    );
   }, [
     step,
     isPaused,
