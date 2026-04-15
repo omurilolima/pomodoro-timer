@@ -17,35 +17,27 @@ export const updateStateByElapsedTime = (appState: IAppState): IAppState => {
   const elapsedSeconds = Math.floor((now - (appState.time ?? now)) / 1000);
   if (elapsedSeconds <= 0) return appState;
 
-  let remaining = appState.counterCicleTime;
-  let timeLeft = remaining - elapsedSeconds;
+  let timeLeft = appState.counterCicleTime - elapsedSeconds;
   let currentStatus = appState.currentStatus;
   let step = appState.step;
 
-  const advanceCycle = () => {
+  while (timeLeft <= 0) {
+    const debt = -timeLeft;
+
     if (currentStatus === "focus") {
       if (step < 4) {
         step = (step + 1) as 1 | 2 | 3 | 4;
         currentStatus = "shortBreak";
-        return appState.currentShortBreakCicleTime;
+        timeLeft = appState.currentShortBreakCicleTime - debt;
       } else {
         step = 1;
         currentStatus = "longBreak";
-        return appState.currentLongBreakCicleTime;
+        timeLeft = appState.currentLongBreakCicleTime - debt;
       }
-    }
-
-    if (currentStatus === "shortBreak" || currentStatus === "longBreak") {
+    } else {
       currentStatus = "focus";
-      return appState.currentFocusCicleTime;
+      timeLeft = appState.currentFocusCicleTime - debt;
     }
-
-    return remaining;
-  };
-
-  while (timeLeft <= 0) {
-    const overflow = Math.abs(timeLeft);
-    const nextTime = advanceCycle();
   }
 
   return {

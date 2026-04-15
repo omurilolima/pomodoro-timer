@@ -10,7 +10,7 @@ import { TNavigationScreenProps } from "../appRoutes";
 import { Theme } from "../shared/themes/Theme";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
 import { MaterialIcons } from "@expo/vector-icons";
-import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { updateStateByElapsedTime } from "../shared/helpers/UpdateStateByElapsedTime";
 
@@ -23,8 +23,6 @@ export const Home = () => {
 
     return () => listener.remove();
   }, []);
-
-  console.log("appRunningState:", appRunningState);
 
   const [currentStatus, setCurrentStatus] = useState<
     "focus" | "shortBreak" | "longBreak"
@@ -50,7 +48,6 @@ export const Home = () => {
         AsyncStorage.getItem("SHORT_BREAK"),
         AsyncStorage.getItem("LONG_BREAK"),
       ]).then(([focus, shortBreak, longBreak]) => {
-        setCounterCicleTime(JSON.parse(focus || "25") * 60);
         setcurrentFocusCicleTime(JSON.parse(focus || "25") * 60);
         setcurrentShortBreakCicleTime(JSON.parse(shortBreak || "5") * 60);
         setcurrentLongBreakCicleTime(JSON.parse(longBreak || "15") * 60);
@@ -151,7 +148,7 @@ export const Home = () => {
       JSON.stringify({
         step,
         isPaused: false,
-        isRunning,
+        isRunning: true,
         currentStatus,
         time: Date.now(),
         counterCicleTime,
@@ -227,7 +224,8 @@ export const Home = () => {
   return (
     <View style={styles.mainContainer}>
       <TouchableOpacity
-        style={styles.settingsButton}
+        disabled={isRunning}
+        style={[styles.settingsButton, { opacity: isRunning ? 0 : 1 }]}
         onPress={() => navigation.navigate("Settings")}
       >
         <MaterialIcons name="settings" size={28} color={Theme.colors.divider} />
