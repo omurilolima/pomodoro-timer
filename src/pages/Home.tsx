@@ -41,6 +41,13 @@ export const Home = () => {
   );
   const [counterCicleTime, setCounterCicleTime] = useState(25 * 60);
 
+  const isRunningRef = useRef(isRunning);
+  const currentStatusRef = useRef(currentStatus);
+  useEffect(() => {
+    isRunningRef.current = isRunning;
+    currentStatusRef.current = currentStatus;
+  });
+
   useFocusEffect(
     useCallback(() => {
       Promise.all([
@@ -48,9 +55,40 @@ export const Home = () => {
         AsyncStorage.getItem("SHORT_BREAK"),
         AsyncStorage.getItem("LONG_BREAK"),
       ]).then(([focus, shortBreak, longBreak]) => {
-        setcurrentFocusCicleTime(JSON.parse(focus || "25") * 60);
-        setcurrentShortBreakCicleTime(JSON.parse(shortBreak || "5") * 60);
-        setcurrentLongBreakCicleTime(JSON.parse(longBreak || "15") * 60);
+        const focusSec = JSON.parse(focus || "25") * 60;
+        const shortSec = JSON.parse(shortBreak || "5") * 60;
+        const longSec = JSON.parse(longBreak || "15") * 60;
+
+        setcurrentFocusCicleTime(focusSec);
+        setcurrentShortBreakCicleTime(shortSec);
+        setcurrentLongBreakCicleTime(longSec);
+
+        if (!isRunningRef.current) {
+          const nextCounter =
+            currentStatusRef.current === "shortBreak"
+              ? shortSec
+              : currentStatusRef.current === "longBreak"
+                ? longSec
+                : focusSec;
+          setCounterCicleTime(nextCounter);
+
+          AsyncStorage.getItem("APP_STATE").then((value) => {
+            const appState = JSON.parse(value || "null");
+            if (!appState) return;
+
+            AsyncStorage.setItem(
+              "APP_STATE",
+              JSON.stringify({
+                ...appState,
+                counterCicleTime: nextCounter,
+                currentFocusCicleTime: focusSec,
+                currentShortBreakCicleTime: shortSec,
+                currentLongBreakCicleTime: longSec,
+                time: Date.now(),
+              }),
+            );
+          });
+        }
       });
     }, []),
   );
